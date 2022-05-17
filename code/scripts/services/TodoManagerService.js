@@ -10,8 +10,8 @@ class TodoManagerService {
         this.enclave.insertRecord(TO_DO_TABLE, todo.input.name, todo, callback);
     }
 
-    removeToDo(todoPath, callback) {
-        this.enclave.deleteRecord(todo.input.name, callback);
+    removeToDo(todo, callback) {
+        this.enclave.deleteRecord(TO_DO_TABLE, todo.input.name, callback);
     }
 
     editToDo(todo, callback) {
@@ -21,10 +21,22 @@ class TodoManagerService {
     listToDos(callback) {
         this.enclave.getAllRecords(TO_DO_TABLE, callback);
     }
+
+    listFilteredToDos(sort, limit, callback) {
+        this.enclave.filter(TO_DO_TABLE, undefined, sort, limit, callback);
+    }
+
+    beginBatch() {
+        this.enclave.beginBatch();
+    }
+
+    commitBatch(callback) {
+        this.enclave.commitBatch(callback);
+    }
 }
 
 let todoManagerService;
-let getTodoManagerServiceInstance = function (controllerInstance, callback) {
+let getTodoManagerServiceInstance = function(controllerInstance, callback) {
     if (!todoManagerService) {
         controllerInstance.getMainEnclaveDB((err, enclave) => {
             if (err) {

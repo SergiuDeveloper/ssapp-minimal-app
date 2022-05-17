@@ -12,6 +12,20 @@
         <input data-view-model="@item" data-tag="create-todo">
     </section>
 
+    <section class="filtering">
+        <select data-tag="sortSelect">
+            <option value="asc">Ascending</option>
+            <option value="dsc">Descending</option>
+        </select>
+        <br>
+
+        <label for="@limit.id">Set the item limit</label>
+        <input data-view-model="@limit" data-tag="limitInput">
+        <br>
+
+        <button data-tag="filterButton">Filter</button>
+    </section>
+
     <!-- Render each item from the model -->
     <section class="todos" data-for="@items" data-tag="items">
         <div class="todo">
@@ -22,6 +36,10 @@
         </div>
 
         <div slot="no-data">{{ @no-data }}</div>
+    </section>
+
+    <section class="deletion">
+        <button data-tag="deleteTodo">Delete Selected Items</button>
     </section>
 
     <hr>

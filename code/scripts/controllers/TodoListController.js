@@ -1,6 +1,6 @@
-import {getTodoManagerServiceInstance} from "../services/TodoManagerService.js";
+import { getTodoManagerServiceInstance } from "../services/TodoManagerService.js";
 
-const {WebcController} = WebCardinal.controllers;
+const { WebcController } = WebCardinal.controllers;
 
 export default class TodoListController extends WebcController {
     constructor(...props) {
@@ -12,6 +12,7 @@ export default class TodoListController extends WebcController {
                 if (err) {
                     return this._handleError(err);
                 } else {
+                    data = data.filter(item => !item.__deleted);
                     this.setItemsClean(data);
                 }
                 // Init the listeners to handle events
@@ -49,6 +50,54 @@ export default class TodoListController extends WebcController {
             itemsElement.addEventListener("click", this._changeToDoCheckedState)
             itemsElement.addEventListener("dblclick", this._doubleClickHandler)
         }
+
+        const deleteTodoElement = this.getElementByTag('deleteTodo');
+        if (deleteTodoElement) {
+            deleteTodoElement.addEventListener("click", this._deleteItems);
+        }
+
+        const filterButtonElement = this.getElementByTag('filterButton');
+        if (filterButtonElement) {
+            filterButtonElement.addEventListener("click", this._filterItems)
+        }
+    }
+
+    _filterItems = (event) => {
+        const sort = this.getElementByTag('sortSelect').value;
+        let limit = parseInt(this.getElementByTag('limitInput').value);
+        if (isNaN(limit)) {
+            limit = undefined;
+        }
+
+        this.TodoManagerService.listFilteredToDos(sort, limit, (err, data) => {
+            if (!err) {
+                data = data.filter(item => !item.__deleted);
+                this.setItemsClean(data);
+            }
+        });
+    }
+
+    _deleteItems = (event) => {
+        this.TodoManagerService.listToDos((err, data) => {
+            if (!err) {
+                data = data.filter(item => !item.__deleted);
+                this.TodoManagerService.beginBatch();
+                for (const item of data) {
+                    const checked = item.checkbox.checked;
+                    if (checked) {
+                        this.TodoManagerService.removeToDo(item, (err, data) => {});
+                    }
+                }
+                this.TodoManagerService.commitBatch((err) => {
+                    this.populateItemList((err, data) => {
+                        if (!err) {
+                            data = data.filter(item => !item.__deleted);
+                            this.setItemsClean(data);
+                        }
+                    });
+                });
+            }
+        });
     }
 
     populateItemList(callback) {
@@ -184,8 +233,7 @@ export default class TodoListController extends WebcController {
             },
             () => {
                 console.log('You choose not to refresh! Good luck...');
-            },
-            {
+            }, {
                 disableExpanding: true,
                 cancelButtonText: 'No',
                 confirmButtonText: 'Yes',
